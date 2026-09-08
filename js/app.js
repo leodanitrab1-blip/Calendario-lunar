@@ -60,10 +60,12 @@ function bindEvents() {
 
   const search = document.getElementById('plantSearch');
   const clearBtn = document.getElementById('clearSearch');
+  let searchDebounce = null;
   search.addEventListener('input', () => {
     const q = search.value.trim();
     clearBtn.hidden = q.length === 0;
-    renderAutocomplete(q);
+    clearTimeout(searchDebounce);
+    searchDebounce = setTimeout(() => renderAutocomplete(q), 120);
   });
   search.addEventListener('keydown', (e) => {
     if (e.key === 'Enter') {
