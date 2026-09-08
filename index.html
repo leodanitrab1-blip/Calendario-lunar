@@ -1,0 +1,186 @@
+<!DOCTYPE html>
+<html lang="es" data-theme="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🌙 Calendario Lunar de Siembra - Cultiva con las fases de la luna</title>
+    
+    <!-- Meta tags para SEO -->
+    <meta name="description" content="Calendario lunar de siembra 2026 - Descubre los mejores días para sembrar, trasplantar, podar y cosechar según las fases de la luna. Gratis y sin registro.">
+    <meta name="keywords" content="calendario lunar siembra, fases lunares jardinería, cuándo plantar, jardinería lunar, huerto urbano">
+    
+    <!-- Open Graph para compartir en redes -->
+    <meta property="og:title" content="🌙 Calendario Lunar de Siembra">
+    <meta property="og:description" content="Cultiva con las fases de la luna. Descubre los mejores días para sembrar, trasplantar y cosechar.">
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="https://tu-dominio.com">
+    
+    <!-- Favicon -->
+    <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🌙</text></svg>">
+    
+    <!-- CSS -->
+    <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+    
+    <!-- ============================================================ -->
+    <!-- TOAST NOTIFICACIONES -->
+    <!-- ============================================================ -->
+    <div id="toast" class="toast">
+        <span class="toast-icon">✅</span>
+        <span id="toastMessage">¡Copiado al portapapeles!</span>
+    </div>
+    
+    <!-- ============================================================ -->
+    <!-- CONTENEDOR PRINCIPAL -->
+    <!-- ============================================================ -->
+    <div class="app-container">
+        
+        <!-- ========================================================== -->
+        <!-- HEADER -->
+        <!-- ========================================================== -->
+        <header class="app-header">
+            <div class="header-left">
+                <span class="logo-icon">🌙</span>
+                <div>
+                    <h1 class="header-title">Calendario Lunar de Siembra</h1>
+                    <span class="header-subtitle">Cultiva con los ritmos de la naturaleza</span>
+                </div>
+            </div>
+            <div class="header-right">
+                <button class="theme-toggle" id="themeToggle" aria-label="Cambiar tema claro/oscuro">
+                    ☀️
+                </button>
+                <button class="share-btn" id="shareBtn">
+                    📤 Compartir
+                </button>
+            </div>
+        </header>
+        
+        <!-- ========================================================== -->
+        <!-- CONTROLES DE NAVEGACIÓN Y BÚSQUEDA -->
+        <!-- ========================================================== -->
+        <div class="card">
+            <div class="navigation-controls">
+                <!-- Navegación meses -->
+                <div class="month-nav">
+                    <button class="nav-btn" id="prevMonth" aria-label="Mes anterior">‹</button>
+                    <span class="month-display" id="monthDisplay">
+                        Marzo <span class="year">2026</span>
+                    </span>
+                    <button class="nav-btn" id="nextMonth" aria-label="Mes siguiente">›</button>
+                </div>
+                
+                <!-- Buscador de plantas -->
+                <div class="plant-search">
+                    <span class="search-icon">🔍</span>
+                    <input 
+                        type="text" 
+                        id="plantSearch" 
+                        placeholder="Busca una planta (ej: tomate)" 
+                        autocomplete="off"
+                        aria-label="Buscar planta"
+                    >
+                    <button class="clear-btn" id="clearSearch" aria-label="Limpiar búsqueda">✕</button>
+                </div>
+            </div>
+            
+            <!-- Leyenda de fases lunares -->
+            <div class="legend" id="legend">
+                <span class="legend-item">
+                    <span class="icon">🌑</span> Luna Nueva
+                </span>
+                <span class="legend-item">
+                    <span class="icon">🌒</span> Cuarto Creciente
+                </span>
+                <span class="legend-item">
+                    <span class="icon">🌕</span> Luna Llena
+                </span>
+                <span class="legend-item">
+                    <span class="icon">🌘</span> Cuarto Menguante
+                </span>
+                <span class="legend-item">
+                    <span class="icon">🌙</span> Menguante
+                </span>
+                <span class="legend-item" style="margin-left: auto;">
+                    <span class="dot dot-new"></span> Recomendado
+                </span>
+            </div>
+            
+            <!-- ========================================================== -->
+            <!-- CALENDARIO -->
+            <!-- ========================================================== -->
+            <div id="calendarContainer">
+                <!-- Los días de la semana -->
+                <div class="calendar-grid" id="calendarGrid">
+                    <div class="day-header">Lun</div>
+                    <div class="day-header">Mar</div>
+                    <div class="day-header">Mié</div>
+                    <div class="day-header">Jue</div>
+                    <div class="day-header">Vie</div>
+                    <div class="day-header">Sáb</div>
+                    <div class="day-header">Dom</div>
+                    
+                    <!-- Los días del mes se generarán con JavaScript -->
+                    <!-- Los placeholders se reemplazarán al cargar -->
+                </div>
+            </div>
+            
+            <!-- ========================================================== -->
+            <!-- PANEL DE RECOMENDACIONES -->
+            <!-- ========================================================== -->
+            <div class="recommendations-panel" id="recommendationsPanel">
+                <div class="empty-state" id="emptyState">
+                    <span class="icon">🌱</span>
+                    <p>Selecciona una planta y un día del calendario<br>para ver las recomendaciones de siembra</p>
+                </div>
+                <div class="recommendation-content" id="recommendationContent" style="display: none;">
+                    <!-- Se llena con JavaScript -->
+                </div>
+            </div>
+            
+            <!-- ========================================================== -->
+            <!-- ACCIONES ADICIONALES -->
+            <!-- ========================================================== -->
+            <div style="display: flex; flex-wrap: wrap; gap: 12px; margin-top: 16px; justify-content: space-between; align-items: center;">
+                <div style="display: flex; gap: 10px; flex-wrap: wrap;">
+                    <button class="pdf-btn" id="pdfBtn">
+                        📄 Descargar PDF
+                    </button>
+                    <button class="share-btn" id="resetBtn" style="background: var(--bg-input); border-color: var(--border-light);">
+                        🔄 Hoy
+                    </button>
+                </div>
+                <span style="font-size: 12px; color: var(--text-muted);" id="plantSelectedDisplay">
+                    Planta: <strong style="color: var(--text-secondary);">Ninguna</strong>
+                </span>
+            </div>
+        </div>
+        
+        <!-- ========================================================== -->
+        <!-- FOOTER -->
+        <!-- ========================================================== -->
+        <footer class="app-footer">
+            <p>
+                🌙 Calendario Lunar de Siembra • 
+                <a href="#" id="resetAllLink">Hoy</a> • 
+                <a href="#" id="feedbackLink">Sugerencias</a>
+            </p>
+            <p style="margin-top: 4px; font-size: 12px; color: var(--text-muted);">
+                Los datos son orientativos. Consulta siempre las condiciones locales de tu cultivo.
+            </p>
+        </footer>
+    </div>
+    
+    <!-- ============================================================ -->
+    <!-- SCRIPTS -->
+    <!-- ============================================================ -->
+    <!-- Orden de carga: primero los módulos, luego el main -->
+    <script src="js/plants.js"></script>
+    <script src="js/lunar.js"></script>
+    <script src="js/calendar.js"></script>
+    <script src="js/recommendations.js"></script>
+    <script src="js/main.js"></script>
+    
+</body>
+</html>
