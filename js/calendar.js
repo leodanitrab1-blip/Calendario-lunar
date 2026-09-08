@@ -1,298 +1,340 @@
 /**
- * ============================================================
- * 📅 CALENDAR.JS - Generador de calendario lunar (CORREGIDO)
- * ============================================================
+ * Calendar rendering & navigation
  */
-
-// ============================================================
-// 1. ESTADO DEL CALENDARIO
-// ============================================================
-
-// El estado ahora se inicializa con el mes actual REAL
 const calendarState = {
-    year: new Date().getFullYear(),
-    month: new Date().getMonth() + 1, // 1-12 (mes actual)
-    selectedDay: null,
-    selectedPlantId: null
+  year: new Date().getFullYear(),
+  month: new Date().getMonth() + 1,
+  selectedDay: null,
+  selectedPlantId: null
 };
-
-// ============================================================
-// 2. REFERENCIAS AL DOM
-// ============================================================
-
-const DOM = {
-    calendarGrid: document.getElementById('calendarGrid'),
-    monthDisplay: document.getElementById('monthDisplay'),
-    prevMonthBtn: document.getElementById('prevMonth'),
-    nextMonthBtn: document.getElementById('nextMonth'),
-    plantSearch: document.getElementById('plantSearch'),
-    clearSearch: document.getElementById('clearSearch'),
-    recommendationsPanel: document.getElementById('recommendationsPanel'),
-    emptyState: document.getElementById('emptyState'),
-    recommendationContent: document.getElementById('recommendationContent'),
-    plantSelectedDisplay: document.getElementById('plantSelectedDisplay'),
-    resetBtn: document.getElementById('resetBtn'),
-    pdfBtn: document.getElementById('pdfBtn'),
-    shareBtn: document.getElementById('shareBtn'),
-    themeToggle: document.getElementById('themeToggle'),
-    toast: document.getElementById('toast'),
-    toastMessage: document.getElementById('toastMessage')
-};
-
-// ============================================================
-// 3. FUNCIÓN PRINCIPAL - RENDERIZAR CALENDARIO
-// ============================================================
 
 function renderCalendar() {
-    const { year, month, selectedPlantId } = calendarState;
-    
-    // Obtener datos lunares del mes
-    const monthData = getLunarMonth(year, month);
-    const firstDayOfMonth = new Date(year, month - 1, 1).getDay();
-    const daysInMonth = new Date(year, month, 0).getDate();
-    
-    // Actualizar display del mes
-    const monthNames = ['Enero', 'Febrero', 'Marzo', 'Abril', 'Mayo', 'Junio', 'Julio', 'Agosto', 'Septiembre', 'Octubre', 'Noviembre', 'Diciembre'];
-    DOM.monthDisplay.innerHTML = `${monthNames[month - 1]} <span class="year">${year}</span>`;
-    
-    // Limpiar grid (mantener los encabezados de días)
-    const grid = DOM.calendarGrid;
-    while (grid.children.length > 7) {
-        grid.removeChild(grid.lastChild);
+  const grid = document.getElementById('calendarGrid');
+  if (!grid) return;
+
+  const { year, month, selectedPlantId } = calendarState;
+  const monthData = getLunarMonth(year, month);
+  const firstDay = new Date(year, month - 1, 1).getDay(); // 0=Sun
+  const daysInMonth = new Date(year, month, 0).getDate();
+
+  // Month label
+  const monthNames = t('months');
+  const label = document.getElementById('monthDisplay');
+  if (label) label.textContent = `${monthNames[month - 1]} ${year}`;
+
+  // Headers
+  const dayNames = t('days');
+  let html = dayNames.map(d => `<div class="day-header">${d}</div>`).join('');
+
+  // Offset: Monday-first
+  let startOffset = firstDay === 0 ? 6 : firstDay - 1;
+  for (let i = 0; i < startOffset; i++) {
+    html += `<div class="day-cell empty"></div>`;
+  }
+
+  const today = new Date();
+  const isCurrentMonth = today.getFullYear() === year && today.getMonth() + 1 === month;
+  const plant = selectedPlantId ? getPlantById(selectedPlantId) : null;
+
+  for (let day = 1; day <= daysInMonth; day++) {
+    const phase = monthData.find(d => d.day === day) || {};
+    const phaseId = phase.phaseId || 'luna_nueva';
+    const phaseClass = phase.phaseClass || 'new';
+
+    let classes = ['day-cell'];
+    if (isCurrentMonth && day === today.getDate()) classes.push('today');
+    if (calendarState.selectedDay === day) classes.push('selected');
+
+    // Recommended?
+    let isRec = false;
+    if (plant && plant.acciones) {
+      const phaseNameMap = {
+        luna_nueva: 'luna nueva',
+        cuarto_creciente: 'cuarto creciente',
+        luna_llena: 'luna llena',
+        cuarto_menguante: 'cuarto menguante',
+        luna_menguante: 'luna menguante'
+      };
+      const alt = phaseNameMap[phaseId] || '';
+      for (const fases of Object.values(plant.acciones)) {
+        if (fases.includes(phaseId) || fases.includes(alt)) {
+          isRec = true;
+          break;
+        }
+      }
     }
-    
-    // Añadir celdas vacías para los días antes del primer día del mes
-    let startOffset = (firstDayOfMonth === 0) ? 6 : firstDayOfMonth - 1;
-    
-    for (let i = 0; i < startOffset; i++) {
-        const emptyCell = document.createElement('div');
-        emptyCell.className = 'day-cell empty';
-        emptyCell.style.opacity = '0.2';
-        emptyCell.style.pointerEvents = 'none';
-        grid.appendChild(emptyCell);
-    }
-    
-    // Obtener información de la planta seleccionada
-    let plantActions = null;
-    let plantData = null;
-    if (selectedPlantId) {
-        plantData = getPlantById(selectedPlantId);
-        if (plantData) {
-            plantActions = plantData.acciones;
-        }
-    }
-    
-    // Crear celdas para cada día del mes
-    const today = new Date();
-    const todayDate = today.getDate();
-    const todayMonth = today.getMonth() + 1;
-    const todayYear = today.getFullYear();
-    
-    for (let day = 1; day <= daysInMonth; day++) {
-        const cell = document.createElement('div');
-        cell.className = 'day-cell';
-        cell.dataset.day = day;
-        cell.dataset.month = month;
-        cell.dataset.year = year;
-        
-        // Obtener fase lunar del día
-        const phaseData = monthData.find(d => d.day === day);
-        const phaseId = phaseData ? phaseData.phaseId : 'luna_nueva';
-        const phaseIcon = phaseData ? phaseData.phaseIcono : '🌑';
-        const phaseNombre = phaseData ? phaseData.phaseNombre : 'Luna Nueva';
-        
-        // Añadir clase de fase
-        if (phaseId) {
-            cell.classList.add(`phase-${phaseId.replace('_', '-')}`);
-        }
-        
-        // Contenido de la celda
-        cell.innerHTML = `
-            <span class="day-number">${day}</span>
-            <span class="phase-icon">${phaseIcon}</span>
-            <span class="recommendation-badge"></span>
-        `;
-        
-        // Resaltar día actual
-        if (day === todayDate && month === todayMonth && year === todayYear) {
-            cell.classList.add('today');
-        }
-        
-        // Resaltar día seleccionado
-        if (day === calendarState.selectedDay) {
-            cell.classList.add('selected');
-        }
-        
-        // Verificar si este día es recomendado para la planta seleccionada
-        let isRecommended = false;
-        let recommendationCount = 0;
-        let recommendationActions = [];
-        
-        if (plantActions && phaseId) {
-            // Mapeo de nombres de fase
-            const phaseNameMap = {
-                'luna_nueva': 'luna nueva',
-                'cuarto_creciente': 'cuarto creciente',
-                'luna_llena': 'luna llena',
-                'cuarto_menguante': 'cuarto menguante',
-                'luna_menguante': 'luna menguante'
-            };
-            const phaseName = phaseNameMap[phaseId] || '';
-            
-            for (const [accion, fases] of Object.entries(plantActions)) {
-                if (fases.includes(phaseId) || fases.includes(phaseName)) {
-                    isRecommended = true;
-                    recommendationCount++;
-                    recommendationActions.push(accion);
-                }
-            }
-        }
-        
-        if (isRecommended) {
-            cell.classList.add('recommended');
-            if (recommendationCount > 1) {
-                cell.classList.add('recommended-multiple');
-            }
-            const badge = cell.querySelector('.recommendation-badge');
-            if (badge) {
-                badge.textContent = recommendationCount;
-                badge.style.display = 'flex';
-            }
-        }
-        
-        // Almacenar datos en dataset
-        cell.dataset.phaseId = phaseId;
-        cell.dataset.phaseNombre = phaseNombre;
-        cell.dataset.phaseIcon = phaseIcon;
-        cell.dataset.recommended = isRecommended ? 'true' : 'false';
-        cell.dataset.recommendationCount = recommendationCount;
-        cell.dataset.recommendationActions = JSON.stringify(recommendationActions);
-        
-        // Evento click
-        cell.addEventListener('click', () => handleDayClick(cell, day, phaseId, phaseNombre, phaseIcon));
-        
-        grid.appendChild(cell);
-    }
-    
-    // Actualizar display de planta seleccionada
-    updatePlantDisplay();
-    
-    // Si hay un día seleccionado y una planta, mostrar recomendaciones
-    if (calendarState.selectedDay && selectedPlantId) {
-        showRecommendationsForDay(calendarState.selectedDay);
-    } else if (selectedPlantId) {
-        showPlantInfo(selectedPlantId);
-    } else {
-        showEmptyState();
-    }
-    
-    // Guardar preferencias
-    savePreferences();
+    if (isRec) classes.push('recommended');
+
+    html += `
+      <div class="${classes.join(' ')}"
+           data-day="${day}"
+           data-phase="${phaseId}"
+           role="button"
+           tabindex="0"
+           aria-label="${day}">
+        <span class="day-number">${day}</span>
+        <span class="phase-mark ${phaseClass}"></span>
+      </div>`;
+  }
+
+  grid.innerHTML = html;
+
+  // Bind clicks
+  grid.querySelectorAll('.day-cell:not(.empty)').forEach(cell => {
+    cell.addEventListener('click', () => {
+      const day = parseInt(cell.dataset.day, 10);
+      const phaseId = cell.dataset.phase;
+      selectDay(day, phaseId);
+    });
+    cell.addEventListener('keydown', (e) => {
+      if (e.key === 'Enter' || e.key === ' ') {
+        e.preventDefault();
+        cell.click();
+      }
+    });
+  });
 }
 
-// ============================================================
-// 4. FUNCIONES DE NAVEGACIÓN (CORREGIDAS)
-// ============================================================
+function selectDay(day, phaseId) {
+  calendarState.selectedDay = day;
+  renderCalendar();
+  showDayDetail(day, phaseId);
+}
 
 function goToPreviousMonth() {
-    console.log(`⬅️ Mes anterior: ${calendarState.month}/${calendarState.year} →`);
-    calendarState.month--;
-    if (calendarState.month < 1) {
-        calendarState.month = 12;
-        calendarState.year--;
-    }
-    calendarState.selectedDay = null;
-    console.log(`   → ${calendarState.month}/${calendarState.year}`);
-    renderCalendar();
-    showEmptyState();
+  calendarState.month--;
+  if (calendarState.month < 1) {
+    calendarState.month = 12;
+    calendarState.year--;
+  }
+  calendarState.selectedDay = null;
+  renderCalendar();
+  showEmptyOrPlant();
+  saveState();
 }
 
 function goToNextMonth() {
-    console.log(`➡️ Mes siguiente: ${calendarState.month}/${calendarState.year} →`);
-    calendarState.month++;
-    if (calendarState.month > 12) {
-        calendarState.month = 1;
-        calendarState.year++;
-    }
-    calendarState.selectedDay = null;
-    console.log(`   → ${calendarState.month}/${calendarState.year}`);
-    renderCalendar();
-    showEmptyState();
+  calendarState.month++;
+  if (calendarState.month > 12) {
+    calendarState.month = 1;
+    calendarState.year++;
+  }
+  calendarState.selectedDay = null;
+  renderCalendar();
+  showEmptyOrPlant();
+  saveState();
 }
 
 function goToToday() {
-    const today = new Date();
-    calendarState.year = today.getFullYear();
-    calendarState.month = today.getMonth() + 1;
-    calendarState.selectedDay = null;
-    console.log(`📅 Volviendo a hoy: ${calendarState.month}/${calendarState.year}`);
-    renderCalendar();
+  const now = new Date();
+  calendarState.year = now.getFullYear();
+  calendarState.month = now.getMonth() + 1;
+  calendarState.selectedDay = null;
+  renderCalendar();
+  showEmptyOrPlant();
+  saveState();
+}
+
+function showEmptyOrPlant() {
+  if (calendarState.selectedPlantId) {
+    showPlantSummary(calendarState.selectedPlantId);
+  } else {
     showEmptyState();
+  }
 }
 
-// ============================================================
-// 5. RESTO DE FUNCIONES (handleDayClick, showRecommendationsForDay, etc.)
-// ============================================================
-
-// ... (todas las funciones anteriores se mantienen igual)
-// showRecommendationsForDay, showPlantInfo, showPhaseInfo, showEmptyState, updatePlantDisplay, getActionClass
-
-// ============================================================
-// 6. GUARDAR PREFERENCIAS
-// ============================================================
-
-function savePreferences() {
-    try {
-        const prefs = {
-            lastYear: calendarState.year,
-            lastMonth: calendarState.month,
-            lastPlant: calendarState.selectedPlantId
-        };
-        localStorage.setItem('lunar-preferences', JSON.stringify(prefs));
-    } catch (e) {}
+function showEmptyState() {
+  const empty = document.getElementById('emptyState');
+  const content = document.getElementById('detailContent');
+  if (empty) empty.hidden = false;
+  if (content) { content.hidden = true; content.innerHTML = ''; }
 }
 
-function loadPreferences() {
-    try {
-        const saved = localStorage.getItem('lunar-preferences');
-        if (saved) {
-            const prefs = JSON.parse(saved);
-            if (prefs.lastYear && prefs.lastMonth) {
-                calendarState.year = prefs.lastYear;
-                calendarState.month = prefs.lastMonth;
-            }
-            if (prefs.lastPlant) {
-                const plant = getPlantById(prefs.lastPlant);
-                if (plant) {
-                    calendarState.selectedPlantId = prefs.lastPlant;
-                    DOM.plantSearch.value = plant.nombre;
-                }
-            }
-        }
-    } catch (e) {}
+function getActionsForPhase(plant, phaseId) {
+  if (!plant || !plant.acciones) return [];
+  const phaseNameMap = {
+    luna_nueva: 'luna nueva',
+    cuarto_creciente: 'cuarto creciente',
+    luna_llena: 'luna llena',
+    cuarto_menguante: 'cuarto menguante',
+    luna_menguante: 'luna menguante'
+  };
+  const alt = phaseNameMap[phaseId] || '';
+  const actions = [];
+  for (const [accion, fases] of Object.entries(plant.acciones)) {
+    if (fases.includes(phaseId) || fases.includes(alt)) actions.push(accion);
+  }
+  return actions;
 }
 
-// ============================================================
-// 7. EXPORTACIÓN
-// ============================================================
+function showDayDetail(day, phaseId) {
+  const empty = document.getElementById('emptyState');
+  const content = document.getElementById('detailContent');
+  if (!content) return;
+  if (empty) empty.hidden = true;
+  content.hidden = false;
 
-if (typeof module !== 'undefined' && module.exports) {
-    module.exports = {
-        calendarState,
-        renderCalendar,
-        goToPreviousMonth,
-        goToNextMonth,
-        goToToday,
-        handleDayClick,
-        showRecommendationsForDay,
-        showPlantInfo,
-        showEmptyState,
-        updatePlantDisplay,
-        getActionClass,
-        savePreferences,
-        loadPreferences
-    };
+  const plant = calendarState.selectedPlantId ? getPlantById(calendarState.selectedPlantId) : null;
+  const phaseName = t('phaseNames.' + phaseId) || phaseId;
+  const phaseDesc = getPhaseDescription(phaseId);
+  const actions = plant ? getActionsForPhase(plant, phaseId) : [];
+  const monthNames = t('months');
+  const dateStr = `${day} ${monthNames[calendarState.month - 1]} ${calendarState.year}`;
+
+  let actionsHtml = '';
+  if (plant) {
+    if (actions.length) {
+      actionsHtml = `<div class="action-chips">${actions.map(a =>
+        `<span class="chip">${getActionLabel(a)}</span>`
+      ).join('')}</div>`;
+    } else {
+      actionsHtml = `<div class="action-chips"><span class="chip neutral">${t('noActions')}</span></div>`;
+    }
+  }
+
+  let plantBlock = '';
+  if (plant) {
+    const tips = getPlantTips(plant).slice(0, 3);
+    plantBlock = `
+      <div class="detail-section">
+        <h4>${getPlantName(plant)} — ${t('tips')}</h4>
+        <ul>${tips.map(tip => `<li>${tip}</li>`).join('')}</ul>
+      </div>
+      <div class="care-grid">
+        <div class="care-item"><span>${t('depth')}</span><strong>${plant.profundidadSiembra} ${t('cm')}</strong></div>
+        <div class="care-item"><span>${t('spacing')}</span><strong>${plant.separacionPlantas} ${t('cm')}</strong></div>
+        <div class="care-item"><span>${t('harvest')}</span><strong>~${plant.diasCosecha} ${t('daysToHarvest')}</strong></div>
+        <div class="care-item"><span>${t('season')}</span><strong>${plant.temporada}</strong></div>
+      </div>`;
+  } else {
+    const tasks = getPhaseTasks(phaseId);
+    plantBlock = `
+      <div class="detail-section">
+        <h4>${t('goodFor')}</h4>
+        <ul>${tasks.map(task => `<li>${task}</li>`).join('')}</ul>
+      </div>`;
+  }
+
+  content.innerHTML = `
+    <div class="detail-header">
+      <div class="detail-phase-icon">
+        <svg class="moon-svg" width="24" height="24" viewBox="0 0 24 24" fill="currentColor">
+          <circle cx="12" cy="12" r="9" opacity="0.2"/>
+          <path d="M12 3a9 9 0 1 0 9 9 7 7 0 0 1-9-9z"/>
+        </svg>
+      </div>
+      <div>
+        <div class="detail-title">${phaseName}</div>
+        <div class="detail-sub">${dateStr}${plant ? ' · ' + getPlantName(plant) : ''}</div>
+      </div>
+    </div>
+    ${actionsHtml}
+    <p style="font-size:0.88rem;color:var(--text-secondary);line-height:1.55;margin-bottom:4px;">${phaseDesc}</p>
+    ${plantBlock}
+  `;
 }
 
-console.log('📅 Módulo de calendario cargado correctamente');
-console.log(`📅 Mes actual: ${calendarState.month}/${calendarState.year}`);
+function showPlantSummary(plantId) {
+  const plant = getPlantById(plantId);
+  if (!plant) { showEmptyState(); return; }
+
+  const empty = document.getElementById('emptyState');
+  const content = document.getElementById('detailContent');
+  if (empty) empty.hidden = true;
+  if (!content) return;
+  content.hidden = false;
+
+  const tips = getPlantTips(plant);
+  const actionKeys = Object.keys(plant.acciones || {});
+
+  content.innerHTML = `
+    <div class="detail-header">
+      <div class="detail-phase-icon" style="font-size:1.4rem;">${plant.icono || '🌱'}</div>
+      <div>
+        <div class="detail-title">${getPlantName(plant)}</div>
+        <div class="detail-sub">${plant.nombreCientifico || ''} · ${plant.tipo}</div>
+      </div>
+    </div>
+    <p style="font-size:0.88rem;color:var(--text-secondary);margin-bottom:12px;">${getPlantDesc(plant)}</p>
+    <div class="action-chips">
+      ${actionKeys.map(a => `<span class="chip">${getActionLabel(a)}</span>`).join('')}
+    </div>
+    <div class="care-grid">
+      <div class="care-item"><span>${t('depth')}</span><strong>${plant.profundidadSiembra} ${t('cm')}</strong></div>
+      <div class="care-item"><span>${t('spacing')}</span><strong>${plant.separacionPlantas} ${t('cm')}</strong></div>
+      <div class="care-item"><span>${t('harvest')}</span><strong>~${plant.diasCosecha} ${t('daysToHarvest')}</strong></div>
+      <div class="care-item"><span>${t('season')}</span><strong>${plant.temporada}</strong></div>
+    </div>
+    <div class="detail-section">
+      <h4>${t('tips')}</h4>
+      <ul>${tips.map(tip => `<li>${tip}</li>`).join('')}</ul>
+    </div>
+  `;
+}
+
+function updateSelectedPlantBar() {
+  const bar = document.getElementById('selectedPlantBar');
+  const plant = calendarState.selectedPlantId ? getPlantById(calendarState.selectedPlantId) : null;
+  if (!bar) return;
+  if (!plant) {
+    bar.hidden = true;
+    return;
+  }
+  bar.hidden = false;
+  document.getElementById('selectedIcon').textContent = plant.icono || '🌱';
+  document.getElementById('selectedName').textContent = getPlantName(plant);
+  document.getElementById('selectedMeta').textContent = plant.nombreCientifico || plant.tipo || '';
+}
+
+function saveState() {
+  try {
+    localStorage.setItem('lunar-state', JSON.stringify({
+      year: calendarState.year,
+      month: calendarState.month,
+      plantId: calendarState.selectedPlantId
+    }));
+  } catch (e) {}
+}
+
+function loadState() {
+  try {
+    const raw = localStorage.getItem('lunar-state');
+    if (!raw) return;
+    const s = JSON.parse(raw);
+    if (s.year && s.month) {
+      calendarState.year = s.year;
+      calendarState.month = s.month;
+    }
+    if (s.plantId && getPlantById(s.plantId)) {
+      calendarState.selectedPlantId = s.plantId;
+    }
+  } catch (e) {}
+}
+
+function generatePrintableCalendar(year, month, plantId) {
+  const monthNames = t('months');
+  const dayNames = t('days');
+  const plant = plantId ? getPlantById(plantId) : null;
+  const monthData = getLunarMonth(year, month);
+  const firstDay = new Date(year, month - 1, 1).getDay();
+  const daysInMonth = new Date(year, month, 0).getDate();
+  let startOffset = firstDay === 0 ? 6 : firstDay - 1;
+
+  let cells = '';
+  for (let i = 0; i < startOffset; i++) cells += '<td></td>';
+  for (let d = 1; d <= daysInMonth; d++) {
+    const ph = monthData.find(x => x.day === d);
+    const name = ph ? (t('phaseNames.' + ph.phaseId) || '') : '';
+    cells += `<td style="border:1px solid #ccc;padding:8px;height:70px;vertical-align:top;">
+      <strong>${d}</strong><br><small>${name}</small></td>`;
+    if ((startOffset + d) % 7 === 0) cells += '</tr><tr>';
+  }
+
+  return `<!DOCTYPE html><html><head><meta charset="utf-8"><title>${monthNames[month-1]} ${year}</title>
+    <style>body{font-family:Georgia,serif;padding:24px;color:#222}table{width:100%;border-collapse:collapse}
+    th{background:#f5f0e6;padding:8px}h1{font-size:1.5rem}</style></head><body>
+    <h1>${monthNames[month-1]} ${year}${plant ? ' — ' + getPlantName(plant) : ''}</h1>
+    <table><tr>${dayNames.map(d => '<th>'+d+'</th>').join('')}</tr><tr>${cells}</tr></table>
+    <p style="margin-top:20px;font-size:12px;color:#666">${t('footerNote')}</p>
+    </body></html>`;
+}
