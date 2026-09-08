@@ -1,5 +1,5 @@
 /**
- * Calendar rendering & navigation
+ * Calendar rendering & navigation — clearer UX + full plant recommendations
  */
 const calendarState = {
   year: new Date().getFullYear(),
@@ -8,25 +8,30 @@ const calendarState = {
   selectedPlantId: null
 };
 
+const PHASE_SYMBOLS = {
+  luna_nueva: '●',
+  cuarto_creciente: '☽',
+  luna_llena: '○',
+  cuarto_menguante: '☾',
+  luna_menguante: '☾'
+};
+
 function renderCalendar() {
   const grid = document.getElementById('calendarGrid');
   if (!grid) return;
 
   const { year, month, selectedPlantId } = calendarState;
   const monthData = getLunarMonth(year, month);
-  const firstDay = new Date(year, month - 1, 1).getDay(); // 0=Sun
+  const firstDay = new Date(year, month - 1, 1).getDay();
   const daysInMonth = new Date(year, month, 0).getDate();
 
-  // Month label
   const monthNames = t('months');
   const label = document.getElementById('monthDisplay');
   if (label) label.textContent = `${monthNames[month - 1]} ${year}`;
 
-  // Headers
   const dayNames = t('days');
   let html = dayNames.map(d => `<div class="day-header">${d}</div>`).join('');
 
-  // Offset: Monday-first
   let startOffset = firstDay === 0 ? 6 : firstDay - 1;
   for (let i = 0; i < startOffset; i++) {
     html += `<div class="day-cell empty"></div>`;
@@ -40,30 +45,19 @@ function renderCalendar() {
     const phase = monthData.find(d => d.day === day) || {};
     const phaseId = phase.phaseId || 'luna_nueva';
     const phaseClass = phase.phaseClass || 'new';
+    const phaseName = t('phaseNames.' + phaseId) || phaseId;
 
     let classes = ['day-cell'];
     if (isCurrentMonth && day === today.getDate()) classes.push('today');
     if (calendarState.selectedDay === day) classes.push('selected');
 
-    // Recommended?
-    let isRec = false;
-    if (plant && plant.acciones) {
-      const phaseNameMap = {
-        luna_nueva: 'luna nueva',
-        cuarto_creciente: 'cuarto creciente',
-        luna_llena: 'luna llena',
-        cuarto_menguante: 'cuarto menguante',
-        luna_menguante: 'luna menguante'
-      };
-      const alt = phaseNameMap[phaseId] || '';
-      for (const fases of Object.values(plant.acciones)) {
-        if (fases.includes(phaseId) || fases.includes(alt)) {
-          isRec = true;
-          break;
-        }
-      }
-    }
-    if (isRec) classes.push('recommended');
+    const dayActions = plant ? getActionsForPhase(plant, phaseId) : [];
+    if (dayActions.length) classes.push('recommended');
+
+    const symbol = PHASE_SYMBOLS[phaseId] || '·';
+    const actionHint = dayActions.length
+      ? dayActions.map(a => getActionLabel(a)).join(', ')
+      : '';
 
     html += `
       <div class="${classes.join(' ')}"
@@ -71,20 +65,19 @@ function renderCalendar() {
            data-phase="${phaseId}"
            role="button"
            tabindex="0"
-           aria-label="${day}">
+           title="${day} — ${phaseName}${actionHint ? ' · ' + actionHint : ''}"
+           aria-label="${day}, ${phaseName}">
         <span class="day-number">${day}</span>
-        <span class="phase-mark ${phaseClass}"></span>
+        <span class="phase-symbol phase-${phaseClass}" aria-hidden="true">${symbol}</span>
+        ${dayActions.length ? `<span class="rec-count">${dayActions.length}</span>` : ''}
       </div>`;
   }
 
   grid.innerHTML = html;
 
-  // Bind clicks
   grid.querySelectorAll('.day-cell:not(.empty)').forEach(cell => {
     cell.addEventListener('click', () => {
-      const day = parseInt(cell.dataset.day, 10);
-      const phaseId = cell.dataset.phase;
-      selectDay(day, phaseId);
+      selectDay(parseInt(cell.dataset.day, 10), cell.dataset.phase);
     });
     cell.addEventListener('keydown', (e) => {
       if (e.key === 'Enter' || e.key === ' ') {
@@ -147,24 +140,41 @@ function showEmptyState() {
   const empty = document.getElementById('emptyState');
   const content = document.getElementById('detailContent');
   if (empty) empty.hidden = false;
-  if (content) { content.hidden = true; content.innerHTML = ''; }
+  if (content) {
+    content.hidden = true;
+    content.innerHTML = '';
+  }
 }
 
 function getActionsForPhase(plant, phaseId) {
   if (!plant || !plant.acciones) return [];
-  const phaseNameMap = {
-    luna_nueva: 'luna nueva',
-    cuarto_creciente: 'cuarto creciente',
-    luna_llena: 'luna llena',
-    cuarto_menguante: 'cuarto menguante',
-    luna_menguante: 'luna menguante'
-  };
-  const alt = phaseNameMap[phaseId] || '';
   const actions = [];
   for (const [accion, fases] of Object.entries(plant.acciones)) {
-    if (fases.includes(phaseId) || fases.includes(alt)) actions.push(accion);
+    if (Array.isArray(fases) && fases.includes(phaseId)) {
+      actions.push(accion);
+    }
   }
   return actions;
+}
+
+/** Best days this month for a plant, grouped by action */
+function getMonthRecommendations(plantId, year, month) {
+  const plant = getPlantById(plantId);
+  if (!plant) return null;
+  const monthData = getLunarMonth(year, month);
+  const byAction = {};
+  for (const dayData of monthData) {
+    const acts = getActionsForPhase(plant, dayData.phaseId);
+    for (const a of acts) {
+      if (!byAction[a]) byAction[a] = [];
+      byAction[a].push({
+        day: dayData.day,
+        phaseId: dayData.phaseId,
+        phaseName: t('phaseNames.' + dayData.phaseId)
+      });
+    }
+  }
+  return byAction;
 }
 
 function showDayDetail(day, phaseId) {
@@ -184,17 +194,25 @@ function showDayDetail(day, phaseId) {
   let actionsHtml = '';
   if (plant) {
     if (actions.length) {
-      actionsHtml = `<div class="action-chips">${actions.map(a =>
-        `<span class="chip">${getActionLabel(a)}</span>`
-      ).join('')}</div>`;
+      actionsHtml = `
+        <div class="rec-banner good">
+          <strong>${t('goodFor')}</strong>
+          <div class="action-chips">${actions.map(a =>
+            `<span class="chip">${getActionLabel(a)}</span>`
+          ).join('')}</div>
+        </div>`;
     } else {
-      actionsHtml = `<div class="action-chips"><span class="chip neutral">${t('noActions')}</span></div>`;
+      actionsHtml = `
+        <div class="rec-banner neutral">
+          <strong>${t('restDay')}</strong>
+          <p>${t('noActions')}</p>
+        </div>`;
     }
   }
 
   let plantBlock = '';
   if (plant) {
-    const tips = getPlantTips(plant).slice(0, 3);
+    const tips = getPlantTips(plant).slice(0, 4);
     plantBlock = `
       <div class="detail-section">
         <h4>${getPlantName(plant)} — ${t('tips')}</h4>
@@ -212,16 +230,14 @@ function showDayDetail(day, phaseId) {
       <div class="detail-section">
         <h4>${t('goodFor')}</h4>
         <ul>${tasks.map(task => `<li>${task}</li>`).join('')}</ul>
-      </div>`;
+      </div>
+      <p class="hint-select-plant">${t('emptyHint')}</p>`;
   }
 
   content.innerHTML = `
     <div class="detail-header">
-      <div class="detail-phase-icon">
-        <svg class="moon-svg" width="24" height="24" viewBox="0 0 24 24" fill="currentColor">
-          <circle cx="12" cy="12" r="9" opacity="0.2"/>
-          <path d="M12 3a9 9 0 1 0 9 9 7 7 0 0 1-9-9z"/>
-        </svg>
+      <div class="detail-phase-icon phase-bg-${(phaseId || '').replace(/_/g, '-')}">
+        <span class="big-phase-symbol">${PHASE_SYMBOLS[phaseId] || '●'}</span>
       </div>
       <div>
         <div class="detail-title">${phaseName}</div>
@@ -229,14 +245,17 @@ function showDayDetail(day, phaseId) {
       </div>
     </div>
     ${actionsHtml}
-    <p style="font-size:0.88rem;color:var(--text-secondary);line-height:1.55;margin-bottom:4px;">${phaseDesc}</p>
+    <p class="phase-desc">${phaseDesc}</p>
     ${plantBlock}
   `;
 }
 
 function showPlantSummary(plantId) {
   const plant = getPlantById(plantId);
-  if (!plant) { showEmptyState(); return; }
+  if (!plant) {
+    showEmptyState();
+    return;
+  }
 
   const empty = document.getElementById('emptyState');
   const content = document.getElementById('detailContent');
@@ -245,26 +264,76 @@ function showPlantSummary(plantId) {
   content.hidden = false;
 
   const tips = getPlantTips(plant);
+  const monthRecs = getMonthRecommendations(plantId, calendarState.year, calendarState.month) || {};
   const actionKeys = Object.keys(plant.acciones || {});
+  const monthNames = t('months');
+  const monthLabel = monthNames[calendarState.month - 1];
+
+  // Phase → actions mapping for this plant
+  const phaseMap = {};
+  for (const [accion, fases] of Object.entries(plant.acciones || {})) {
+    for (const f of fases) {
+      if (!phaseMap[f]) phaseMap[f] = [];
+      phaseMap[f].push(accion);
+    }
+  }
+
+  const phaseOrder = ['luna_nueva', 'cuarto_creciente', 'luna_llena', 'cuarto_menguante', 'luna_menguante'];
+  const phaseRows = phaseOrder
+    .filter(pid => phaseMap[pid])
+    .map(pid => {
+      const labels = phaseMap[pid].map(a => getActionLabel(a)).join(', ');
+      return `<div class="phase-row">
+        <span class="phase-row-sym phase-${PHASES[pid] ? PHASES[pid].iconClass : 'new'}">${PHASE_SYMBOLS[pid] || '·'}</span>
+        <span class="phase-row-name">${t('phaseNames.' + pid)}</span>
+        <span class="phase-row-acts">${labels}</span>
+      </div>`;
+    })
+    .join('');
+
+  // Best days this month
+  let daysBlock = '';
+  const hasDays = Object.keys(monthRecs).length > 0;
+  if (hasDays) {
+    const rows = Object.entries(monthRecs).map(([accion, days]) => {
+      const dayList = days.map(d => d.day).join(', ');
+      return `<div class="month-rec-row">
+        <span class="chip">${getActionLabel(accion)}</span>
+        <span class="month-rec-days">${dayList}</span>
+      </div>`;
+    }).join('');
+    daysBlock = `
+      <div class="detail-section">
+        <h4>${t('bestDays')} — ${monthLabel}</h4>
+        <div class="month-recs">${rows}</div>
+        <p class="hint-click-day">${t('clickDayHint')}</p>
+      </div>`;
+  }
 
   content.innerHTML = `
     <div class="detail-header">
-      <div class="detail-phase-icon" style="font-size:1.4rem;">${plant.icono || '🌱'}</div>
+      <div class="detail-phase-icon plant-icon">${plant.icono || '🌱'}</div>
       <div>
         <div class="detail-title">${getPlantName(plant)}</div>
         <div class="detail-sub">${plant.nombreCientifico || ''} · ${plant.tipo}</div>
       </div>
     </div>
-    <p style="font-size:0.88rem;color:var(--text-secondary);margin-bottom:12px;">${getPlantDesc(plant)}</p>
-    <div class="action-chips">
-      ${actionKeys.map(a => `<span class="chip">${getActionLabel(a)}</span>`).join('')}
-    </div>
+    <p class="phase-desc">${getPlantDesc(plant)}</p>
+
     <div class="care-grid">
       <div class="care-item"><span>${t('depth')}</span><strong>${plant.profundidadSiembra} ${t('cm')}</strong></div>
       <div class="care-item"><span>${t('spacing')}</span><strong>${plant.separacionPlantas} ${t('cm')}</strong></div>
       <div class="care-item"><span>${t('harvest')}</span><strong>~${plant.diasCosecha} ${t('daysToHarvest')}</strong></div>
       <div class="care-item"><span>${t('season')}</span><strong>${plant.temporada}</strong></div>
     </div>
+
+    <div class="detail-section">
+      <h4>${t('lunarActions')}</h4>
+      <div class="phase-map">${phaseRows}</div>
+    </div>
+
+    ${daysBlock}
+
     <div class="detail-section">
       <h4>${t('tips')}</h4>
       <ul>${tips.map(tip => `<li>${tip}</li>`).join('')}</ul>
@@ -325,16 +394,18 @@ function generatePrintableCalendar(year, month, plantId) {
   for (let d = 1; d <= daysInMonth; d++) {
     const ph = monthData.find(x => x.day === d);
     const name = ph ? (t('phaseNames.' + ph.phaseId) || '') : '';
-    cells += `<td style="border:1px solid #ccc;padding:8px;height:70px;vertical-align:top;">
-      <strong>${d}</strong><br><small>${name}</small></td>`;
+    const acts = plant && ph ? getActionsForPhase(plant, ph.phaseId) : [];
+    const actStr = acts.length ? '<br><small style="color:#2d7a56">' + acts.map(a => getActionLabel(a)).join(', ') + '</small>' : '';
+    cells += `<td style="border:1px solid #ccc;padding:8px;height:72px;vertical-align:top;font-size:13px;">
+      <strong>${d}</strong><br><small>${name}</small>${actStr}</td>`;
     if ((startOffset + d) % 7 === 0) cells += '</tr><tr>';
   }
 
-  return `<!DOCTYPE html><html><head><meta charset="utf-8"><title>${monthNames[month-1]} ${year}</title>
+  return `<!DOCTYPE html><html><head><meta charset="utf-8"><title>${monthNames[month - 1]} ${year}</title>
     <style>body{font-family:Georgia,serif;padding:24px;color:#222}table{width:100%;border-collapse:collapse}
     th{background:#f5f0e6;padding:8px}h1{font-size:1.5rem}</style></head><body>
-    <h1>${monthNames[month-1]} ${year}${plant ? ' — ' + getPlantName(plant) : ''}</h1>
-    <table><tr>${dayNames.map(d => '<th>'+d+'</th>').join('')}</tr><tr>${cells}</tr></table>
+    <h1>${monthNames[month - 1]} ${year}${plant ? ' — ' + getPlantName(plant) : ''}</h1>
+    <table><tr>${dayNames.map(d => '<th>' + d + '</th>').join('')}</tr><tr>${cells}</tr></table>
     <p style="margin-top:20px;font-size:12px;color:#666">${t('footerNote')}</p>
     </body></html>`;
 }

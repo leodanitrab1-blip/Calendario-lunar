@@ -62,7 +62,11 @@ const TRANSLATIONS = {
     forPlant: 'para',
     onDay: 'el',
     goodFor: 'Ideal para',
-    restDay: 'Día de descanso'
+    restDay: 'Día de descanso',
+    bestDays: 'Mejores días del mes',
+    clickDayHint: 'Haz clic en un día del calendario para ver el detalle de esa fecha.',
+    lunarActions: 'Labores según la luna',
+    selectPlantFirst: 'Selecciona una planta del catálogo o búscala arriba.'
   },
   en: {
     appTitle: 'Lunar Calendar',
@@ -124,7 +128,11 @@ const TRANSLATIONS = {
     forPlant: 'for',
     onDay: 'on',
     goodFor: 'Good for',
-    restDay: 'Rest day'
+    restDay: 'Rest day',
+    bestDays: 'Best days this month',
+    clickDayHint: 'Click a day on the calendar to see details for that date.',
+    lunarActions: 'Tasks by moon phase',
+    selectPlantFirst: 'Select a plant from the catalog or search above.'
   }
 };
 
