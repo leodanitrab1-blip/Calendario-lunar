@@ -7,11 +7,12 @@
     
     <!-- Meta tags para SEO -->
     <meta name="description" content="Calendario lunar de siembra 2026 - Descubre los mejores días para sembrar, trasplantar, podar y cosechar según las fases de la luna. Gratis y sin registro.">
-    <meta name="keywords" content="calendario lunar siembra, fases lunares jardinería, cuándo plantar, jardinería lunar, huerto urbano">
+    <meta name="keywords" content="calendario lunar siembra, fases lunares jardinería, cuándo plantar, jardinería lunar, huerto urbano, calendario lunar 2026">
+    <meta name="author" content="Calendario Lunar de Siembra">
     
-    <!-- Open Graph para compartir en redes -->
+    <!-- Open Graph -->
     <meta property="og:title" content="🌙 Calendario Lunar de Siembra">
-    <meta property="og:description" content="Cultiva con las fases de la luna. Descubre los mejores días para sembrar, trasplantar y cosechar.">
+    <meta property="og:description" content="Descubre los mejores días para sembrar, trasplantar y cosechar según las fases de la luna.">
     <meta property="og:type" content="website">
     <meta property="og:url" content="https://tu-dominio.com">
     
@@ -48,12 +49,8 @@
                 </div>
             </div>
             <div class="header-right">
-                <button class="theme-toggle" id="themeToggle" aria-label="Cambiar tema claro/oscuro">
-                    ☀️
-                </button>
-                <button class="share-btn" id="shareBtn">
-                    📤 Compartir
-                </button>
+                <button class="theme-toggle" id="themeToggle" aria-label="Cambiar tema claro/oscuro">☀️</button>
+                <button class="share-btn" id="shareBtn">📤 Compartir</button>
             </div>
         </header>
         
@@ -66,7 +63,7 @@
                 <div class="month-nav">
                     <button class="nav-btn" id="prevMonth" aria-label="Mes anterior">‹</button>
                     <span class="month-display" id="monthDisplay">
-                        Marzo <span class="year">2026</span>
+                        <span id="monthName">Marzo</span> <span class="year" id="yearDisplay">2026</span>
                     </span>
                     <button class="nav-btn" id="nextMonth" aria-label="Mes siguiente">›</button>
                 </div>
@@ -77,7 +74,7 @@
                     <input 
                         type="text" 
                         id="plantSearch" 
-                        placeholder="Busca una planta (ej: tomate)" 
+                        placeholder="Busca una planta (ej: tomate, chile...)" 
                         autocomplete="off"
                         aria-label="Buscar planta"
                     >
@@ -87,23 +84,13 @@
             
             <!-- Leyenda de fases lunares -->
             <div class="legend" id="legend">
-                <span class="legend-item">
-                    <span class="icon">🌑</span> Luna Nueva
-                </span>
-                <span class="legend-item">
-                    <span class="icon">🌒</span> Cuarto Creciente
-                </span>
-                <span class="legend-item">
-                    <span class="icon">🌕</span> Luna Llena
-                </span>
-                <span class="legend-item">
-                    <span class="icon">🌘</span> Cuarto Menguante
-                </span>
-                <span class="legend-item">
-                    <span class="icon">🌙</span> Menguante
-                </span>
+                <span class="legend-item"><span class="icon">🌑</span> Luna Nueva</span>
+                <span class="legend-item"><span class="icon">🌒</span> Cuarto Creciente</span>
+                <span class="legend-item"><span class="icon">🌕</span> Luna Llena</span>
+                <span class="legend-item"><span class="icon">🌘</span> Cuarto Menguante</span>
+                <span class="legend-item"><span class="icon">🌙</span> Luna Menguante</span>
                 <span class="legend-item" style="margin-left: auto;">
-                    <span class="dot dot-new"></span> Recomendado
+                    <span class="dot" style="background: #34d399; border-color: #34d399;"></span> Recomendado
                 </span>
             </div>
             
@@ -111,7 +98,6 @@
             <!-- CALENDARIO -->
             <!-- ========================================================== -->
             <div id="calendarContainer">
-                <!-- Los días de la semana -->
                 <div class="calendar-grid" id="calendarGrid">
                     <div class="day-header">Lun</div>
                     <div class="day-header">Mar</div>
@@ -120,9 +106,6 @@
                     <div class="day-header">Vie</div>
                     <div class="day-header">Sáb</div>
                     <div class="day-header">Dom</div>
-                    
-                    <!-- Los días del mes se generarán con JavaScript -->
-                    <!-- Los placeholders se reemplazarán al cargar -->
                 </div>
             </div>
             
@@ -134,9 +117,7 @@
                     <span class="icon">🌱</span>
                     <p>Selecciona una planta y un día del calendario<br>para ver las recomendaciones de siembra</p>
                 </div>
-                <div class="recommendation-content" id="recommendationContent" style="display: none;">
-                    <!-- Se llena con JavaScript -->
-                </div>
+                <div class="recommendation-content" id="recommendationContent" style="display: none;"></div>
             </div>
             
             <!-- ========================================================== -->
@@ -144,12 +125,8 @@
             <!-- ========================================================== -->
             <div style="display: flex; flex-wrap: wrap; gap: 12px; margin-top: 16px; justify-content: space-between; align-items: center;">
                 <div style="display: flex; gap: 10px; flex-wrap: wrap;">
-                    <button class="pdf-btn" id="pdfBtn">
-                        📄 Descargar PDF
-                    </button>
-                    <button class="share-btn" id="resetBtn" style="background: var(--bg-input); border-color: var(--border-light);">
-                        🔄 Hoy
-                    </button>
+                    <button class="pdf-btn" id="pdfBtn">📄 Descargar PDF</button>
+                    <button class="share-btn" id="resetBtn" style="background: var(--bg-input); border-color: var(--border-light);">🔄 Hoy</button>
                 </div>
                 <span style="font-size: 12px; color: var(--text-muted);" id="plantSelectedDisplay">
                     Planta: <strong style="color: var(--text-secondary);">Ninguna</strong>
@@ -175,7 +152,6 @@
     <!-- ============================================================ -->
     <!-- SCRIPTS -->
     <!-- ============================================================ -->
-    <!-- Orden de carga: primero los módulos, luego el main -->
     <script src="js/plants.js"></script>
     <script src="js/lunar.js"></script>
     <script src="js/calendar.js"></script>
