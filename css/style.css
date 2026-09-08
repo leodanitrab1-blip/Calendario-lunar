@@ -911,3 +911,164 @@ body {
     .day-cell { min-height: 44px; }
     .care-grid { grid-template-columns: 1fr; }
 }
+
+/* ===== Clearer calendar cells ===== */
+.day-cell {
+  min-height: 58px;
+  gap: 3px;
+}
+.day-number {
+  font-size: 0.95rem;
+  font-weight: 600;
+}
+.phase-symbol {
+  font-size: 0.85rem;
+  line-height: 1;
+  opacity: 0.85;
+}
+.phase-symbol.phase-new { color: var(--phase-new); }
+.phase-symbol.phase-crescent { color: var(--phase-crescent); }
+.phase-symbol.phase-full { color: var(--phase-full); }
+.phase-symbol.phase-waning { color: var(--phase-waning); }
+
+.rec-count {
+  position: absolute;
+  top: 4px;
+  right: 5px;
+  min-width: 16px;
+  height: 16px;
+  border-radius: 999px;
+  background: var(--green);
+  color: #fff;
+  font-size: 0.65rem;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0 4px;
+  line-height: 1;
+}
+
+.day-cell.recommended {
+  border-color: rgba(61, 155, 110, 0.5);
+  background: var(--green-soft);
+}
+.day-cell.recommended:hover {
+  border-color: var(--green);
+}
+
+/* Remove old tiny phase-mark if present */
+.phase-mark { display: none; }
+
+/* Detail panel enhancements */
+.rec-banner {
+  border-radius: var(--radius-md);
+  padding: 12px 14px;
+  margin-bottom: 14px;
+}
+.rec-banner.good {
+  background: var(--green-soft);
+  border: 1px solid rgba(61, 155, 110, 0.3);
+}
+.rec-banner.neutral {
+  background: var(--bg-secondary);
+  border: 1px solid var(--border);
+}
+.rec-banner strong {
+  display: block;
+  font-size: 0.78rem;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  margin-bottom: 8px;
+  color: var(--text-muted);
+}
+.rec-banner.good strong { color: var(--green); }
+.rec-banner p {
+  font-size: 0.88rem;
+  color: var(--text-secondary);
+  margin: 0;
+}
+
+.phase-desc {
+  font-size: 0.88rem;
+  color: var(--text-secondary);
+  line-height: 1.55;
+  margin-bottom: 12px;
+}
+
+.big-phase-symbol {
+  font-size: 1.35rem;
+  color: var(--accent);
+}
+.detail-phase-icon.plant-icon {
+  font-size: 1.5rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.phase-map {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.phase-row {
+  display: grid;
+  grid-template-columns: 22px 1fr auto;
+  gap: 10px;
+  align-items: center;
+  padding: 8px 10px;
+  border-radius: var(--radius-sm);
+  background: var(--bg-secondary);
+  border: 1px solid var(--border);
+  font-size: 0.85rem;
+}
+.phase-row-sym {
+  font-size: 1rem;
+  text-align: center;
+}
+.phase-row-sym.phase-new { color: var(--phase-new); }
+.phase-row-sym.phase-crescent { color: var(--phase-crescent); }
+.phase-row-sym.phase-full { color: var(--phase-full); }
+.phase-row-sym.phase-waning { color: var(--phase-waning); }
+.phase-row-name {
+  color: var(--text-primary);
+  font-weight: 500;
+}
+.phase-row-acts {
+  color: var(--green);
+  font-size: 0.8rem;
+  text-align: right;
+  font-weight: 500;
+}
+
+.month-recs {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.month-rec-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+.month-rec-days {
+  font-size: 0.88rem;
+  color: var(--text-secondary);
+  font-variant-numeric: tabular-nums;
+}
+
+.hint-click-day,
+.hint-select-plant {
+  font-size: 0.8rem;
+  color: var(--text-muted);
+  margin-top: 10px;
+  font-style: italic;
+}
+
+/* Legend symbols match calendar */
+.legend-item .phase-dot {
+  width: 11px;
+  height: 11px;
+}
