@@ -1,9 +1,8 @@
 /* ========================================
    🌙 CALENDARIO LUNAR DE SIEMBRA
-   Estilos principales - Versión 1.0
+   Estilos principales - Versión 2.0
    ======================================== */
 
-/* ========== IMPORTS Y RESET ========== */
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap');
 
 * {
@@ -13,89 +12,56 @@
 }
 
 :root {
-    /* Paleta de colores - Modo Oscuro (default) */
     --bg-primary: #0a0e17;
     --bg-secondary: #111927;
     --bg-card: #1a2332;
     --bg-card-hover: #243047;
     --bg-input: #0f1625;
-    
     --text-primary: #e8edf5;
     --text-secondary: #94a3b8;
     --text-muted: #64748b;
-    
     --border-color: #2a3a52;
     --border-light: #1e2d42;
-    
     --accent-gold: #fbbf24;
     --accent-gold-dim: rgba(251, 191, 36, 0.15);
     --accent-blue: #60a5fa;
     --accent-green: #34d399;
     --accent-purple: #a78bfa;
-    
-    /* Fases lunares - colores específicos */
     --phase-new: #1a1a2e;
     --phase-crescent: #3b82f6;
     --phase-full: #fbbf24;
     --phase-menguante: #94a3b8;
-    
-    /* Sombras */
     --shadow-card: 0 8px 32px rgba(0, 0, 0, 0.4);
     --shadow-glow: 0 0 60px rgba(251, 191, 36, 0.05);
-    
-    /* Radios */
     --radius-sm: 8px;
     --radius-md: 12px;
     --radius-lg: 20px;
     --radius-xl: 28px;
-    
-    /* Transiciones */
     --transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
     --transition-slow: all 0.5s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
-/* ========== MODO CLARO ========== */
 [data-theme="light"] {
     --bg-primary: #f0f4f8;
     --bg-secondary: #e2e8f0;
     --bg-card: #ffffff;
     --bg-card-hover: #f7fafc;
     --bg-input: #edf2f7;
-    
     --text-primary: #1a202c;
     --text-secondary: #4a5568;
     --text-muted: #a0aec0;
-    
     --border-color: #cbd5e0;
     --border-light: #e2e8f0;
-    
     --shadow-card: 0 8px 32px rgba(0, 0, 0, 0.08);
     --shadow-glow: 0 0 60px rgba(251, 191, 36, 0.08);
 }
 
-/* ========== SCROLLBAR PERSONALIZADA ========== */
-::-webkit-scrollbar {
-    width: 6px;
-    height: 6px;
-}
+::-webkit-scrollbar { width: 6px; height: 6px; }
+::-webkit-scrollbar-track { background: var(--bg-secondary); }
+::-webkit-scrollbar-thumb { background: var(--border-color); border-radius: 10px; }
+::-webkit-scrollbar-thumb:hover { background: var(--text-muted); }
 
-::-webkit-scrollbar-track {
-    background: var(--bg-secondary);
-}
-
-::-webkit-scrollbar-thumb {
-    background: var(--border-color);
-    border-radius: 10px;
-}
-
-::-webkit-scrollbar-thumb:hover {
-    background: var(--text-muted);
-}
-
-/* ========== BASE ========== */
-html {
-    scroll-behavior: smooth;
-}
+html { scroll-behavior: smooth; }
 
 body {
     font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
@@ -110,14 +76,13 @@ body {
         radial-gradient(ellipse at 90% 80%, rgba(96, 165, 250, 0.03) 0%, transparent 50%);
 }
 
-/* ========== CONTENEDOR PRINCIPAL ========== */
 .app-container {
     max-width: 1100px;
     margin: 0 auto;
     padding: 20px 16px 40px;
 }
 
-/* ========== HEADER ========== */
+/* ===== HEADER ===== */
 .app-header {
     display: flex;
     align-items: center;
@@ -170,7 +135,7 @@ body {
     gap: 12px;
 }
 
-/* ========== BOTÓN TEMA (CLARO/OSCURO) ========== */
+/* ===== BOTONES ===== */
 .theme-toggle {
     background: var(--bg-card);
     border: 1px solid var(--border-light);
@@ -192,7 +157,28 @@ body {
     transform: scale(1.05);
 }
 
-/* ========== TARJETA PRINCIPAL ========== */
+.share-btn {
+    background: var(--bg-input);
+    border: 1px solid var(--border-light);
+    color: var(--text-secondary);
+    padding: 8px 18px;
+    border-radius: var(--radius-sm);
+    cursor: pointer;
+    font-size: 13px;
+    font-family: inherit;
+    transition: var(--transition);
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.share-btn:hover {
+    background: var(--bg-card-hover);
+    border-color: var(--border-color);
+    color: var(--text-primary);
+}
+
+/* ===== TARJETA ===== */
 .card {
     background: var(--bg-card);
     border-radius: var(--radius-lg);
@@ -207,7 +193,7 @@ body {
     border-color: var(--border-color);
 }
 
-/* ========== CONTROLES DE NAVEGACIÓN ========== */
+/* ===== NAVEGACIÓN ===== */
 .navigation-controls {
     display: flex;
     align-items: center;
@@ -231,7 +217,7 @@ body {
     height: 44px;
     border-radius: var(--radius-sm);
     cursor: pointer;
-    font-size: 18px;
+    font-size: 20px;
     transition: var(--transition);
     display: flex;
     align-items: center;
@@ -245,9 +231,7 @@ body {
     transform: scale(1.02);
 }
 
-.nav-btn:active {
-    transform: scale(0.95);
-}
+.nav-btn:active { transform: scale(0.95); }
 
 .month-display {
     font-size: 20px;
@@ -263,7 +247,7 @@ body {
     font-weight: 400;
 }
 
-/* ========== BUSCADOR DE PLANTAS ========== */
+/* ===== BUSCADOR ===== */
 .plant-search {
     display: flex;
     align-items: center;
@@ -274,6 +258,7 @@ body {
     padding: 4px 6px 4px 16px;
     transition: var(--transition);
     min-width: 200px;
+    position: relative;
 }
 
 .plant-search:focus-within {
@@ -321,7 +306,39 @@ body {
     display: block;
 }
 
-/* ========== LEYENDA DE FASES ========== */
+/* ===== AUTOCOMPLETADO ===== */
+.autocomplete-list {
+    position: absolute;
+    top: 100%;
+    left: 0;
+    right: 0;
+    background: var(--bg-card);
+    border: 1px solid var(--border-color);
+    border-radius: var(--radius-sm);
+    max-height: 200px;
+    overflow-y: auto;
+    z-index: 100;
+    display: none;
+    margin-top: 4px;
+    box-shadow: var(--shadow-card);
+}
+
+.autocomplete-item {
+    padding: 10px 16px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    transition: background 0.2s;
+    border-bottom: 1px solid var(--border-light);
+    font-size: 14px;
+}
+
+.autocomplete-item:hover {
+    background: var(--bg-card-hover);
+}
+
+/* ===== LEYENDA ===== */
 .legend {
     display: flex;
     flex-wrap: wrap;
@@ -341,10 +358,7 @@ body {
     color: var(--text-secondary);
 }
 
-.legend-item .icon {
-    font-size: 18px;
-}
-
+.legend-item .icon { font-size: 18px; }
 .legend-item .dot {
     width: 12px;
     height: 12px;
@@ -352,12 +366,7 @@ body {
     border: 1px solid var(--border-light);
 }
 
-.dot-new { background: var(--phase-new); }
-.dot-crescent { background: var(--phase-crescent); }
-.dot-full { background: var(--phase-full); }
-.dot-menguante { background: var(--phase-menguante); }
-
-/* ========== CALENDARIO ========== */
+/* ===== CALENDARIO ===== */
 .calendar-grid {
     display: grid;
     grid-template-columns: repeat(7, 1fr);
@@ -412,51 +421,6 @@ body {
     margin-top: 2px;
 }
 
-/* Fases lunares - colores de fondo sutiles */
-.day-cell.phase-new { background: rgba(26, 26, 46, 0.6); }
-.day-cell.phase-crescent { background: rgba(59, 130, 246, 0.08); }
-.day-cell.phase-full { background: rgba(251, 191, 36, 0.08); }
-.day-cell.phase-menguante { background: rgba(148, 163, 184, 0.06); }
-
-/* Día actual */
-.day-cell.today {
-    border: 2px solid var(--accent-gold);
-    box-shadow: 0 0 20px var(--accent-gold-dim);
-}
-
-.day-cell.today .day-number {
-    color: var(--accent-gold);
-}
-
-/* Día recomendado para la planta seleccionada */
-.day-cell.recommended {
-    border-color: var(--accent-green);
-    background: rgba(52, 211, 153, 0.08);
-    box-shadow: 0 0 16px rgba(52, 211, 153, 0.05);
-}
-
-.day-cell.recommended .day-number {
-    color: var(--accent-green);
-}
-
-/* Día seleccionado */
-.day-cell.selected {
-    border-color: var(--accent-blue);
-    background: rgba(96, 165, 250, 0.12);
-    transform: scale(1.04);
-    box-shadow: 0 0 24px rgba(96, 165, 250, 0.08);
-}
-
-.day-cell.selected .day-number {
-    color: var(--accent-blue);
-}
-
-/* Día con múltiples recomendaciones */
-.day-cell.recommended-multiple {
-    border-color: var(--accent-purple);
-    background: rgba(167, 139, 250, 0.08);
-}
-
 .day-cell .recommendation-badge {
     position: absolute;
     top: -4px;
@@ -467,21 +431,58 @@ body {
     border-radius: 50%;
     width: 18px;
     height: 18px;
-    display: flex;
+    display: none;
     align-items: center;
     justify-content: center;
     font-weight: 700;
-    opacity: 0;
-    transform: scale(0);
-    transition: var(--transition);
 }
 
-.day-cell.recommended .recommendation-badge {
-    opacity: 1;
-    transform: scale(1);
+.day-cell .recommendation-badge.show {
+    display: flex;
 }
 
-/* ========== PANEL DE RECOMENDACIONES ========== */
+.day-cell.phase-luna-nueva { background: rgba(26, 26, 46, 0.6); }
+.day-cell.phase-cuarto-creciente { background: rgba(59, 130, 246, 0.08); }
+.day-cell.phase-luna-llena { background: rgba(251, 191, 36, 0.08); }
+.day-cell.phase-cuarto-menguante { background: rgba(148, 163, 184, 0.06); }
+.day-cell.phase-luna-menguante { background: rgba(100, 116, 139, 0.05); }
+
+.day-cell.today {
+    border: 2px solid var(--accent-gold);
+    box-shadow: 0 0 20px var(--accent-gold-dim);
+}
+
+.day-cell.today .day-number { color: var(--accent-gold); }
+
+.day-cell.recommended {
+    border-color: var(--accent-green);
+    background: rgba(52, 211, 153, 0.08);
+    box-shadow: 0 0 16px rgba(52, 211, 153, 0.05);
+}
+
+.day-cell.recommended .day-number { color: var(--accent-green); }
+.day-cell.recommended .recommendation-badge { display: flex; }
+
+.day-cell.recommended-multiple {
+    border-color: var(--accent-purple);
+    background: rgba(167, 139, 250, 0.08);
+}
+
+.day-cell.selected {
+    border-color: var(--accent-blue);
+    background: rgba(96, 165, 250, 0.12);
+    transform: scale(1.04);
+    box-shadow: 0 0 24px rgba(96, 165, 250, 0.08);
+}
+
+.day-cell.selected .day-number { color: var(--accent-blue); }
+
+.day-cell.empty {
+    opacity: 0.2;
+    pointer-events: none;
+}
+
+/* ===== PANEL DE RECOMENDACIONES ===== */
 .recommendations-panel {
     margin-top: 24px;
     padding: 20px 24px;
@@ -572,160 +573,7 @@ body {
     color: var(--text-primary);
 }
 
-/* ========== FOOTER ========== */
-.app-footer {
-    margin-top: 40px;
-    padding-top: 20px;
-    border-top: 1px solid var(--border-light);
-    text-align: center;
-    font-size: 13px;
-    color: var(--text-muted);
-}
-
-.app-footer a {
-    color: var(--text-secondary);
-    text-decoration: none;
-    transition: var(--transition);
-}
-
-.app-footer a:hover {
-    color: var(--accent-gold);
-}
-
-/* ========== RESPONSIVE ========== */
-
-/* Tablets y móviles grandes */
-@media (max-width: 768px) {
-    body { padding: 12px; }
-    
-    .app-container { padding: 12px 8px 30px; }
-    
-    .header-title { font-size: 20px; }
-    .header-subtitle { font-size: 12px; }
-    
-    .card { padding: 16px 14px; }
-    
-    .navigation-controls {
-        flex-direction: column;
-        align-items: stretch;
-        gap: 12px;
-    }
-    
-    .month-nav { justify-content: center; }
-    
-    .plant-search {
-        min-width: unset;
-        width: 100%;
-    }
-    
-    .plant-search input { min-width: unset; }
-    
-    .calendar-grid { gap: 3px; }
-    
-    .day-cell { min-height: 44px; font-size: 12px; }
-    .day-cell .day-number { font-size: 13px; }
-    .day-cell .phase-icon { font-size: 14px; }
-    
-    .day-header { font-size: 10px; padding: 6px 0; }
-    
-    .legend {
-        gap: 6px 14px;
-        padding: 10px 14px;
-        font-size: 12px;
-    }
-    
-    .recommendations-panel { padding: 16px; }
-    
-    .action-tag { font-size: 12px; padding: 3px 12px; }
-}
-
-/* Móviles pequeños */
-@media (max-width: 480px) {
-    .app-header {
-        flex-direction: column;
-        align-items: flex-start;
-        gap: 10px;
-    }
-    
-    .header-right { align-self: flex-start; }
-    
-    .day-cell { min-height: 38px; }
-    .day-cell .day-number { font-size: 11px; }
-    .day-cell .phase-icon { font-size: 12px; }
-    
-    .calendar-grid { gap: 2px; }
-    
-    .month-display { font-size: 16px; min-width: 100px; }
-    
-    .nav-btn { width: 38px; height: 38px; font-size: 14px; }
-    
-    .legend-item { font-size: 11px; }
-}
-
-/* ========== ANIMACIONES ========== */
-@keyframes fadeInUp {
-    from {
-        opacity: 0;
-        transform: translateY(16px);
-    }
-    to {
-        opacity: 1;
-        transform: translateY(0);
-    }
-}
-
-.card {
-    animation: fadeInUp 0.5s ease forwards;
-}
-
-.day-cell {
-    animation: fadeInUp 0.3s ease forwards;
-}
-
-.day-cell:nth-child(1) { animation-delay: 0.01s; }
-.day-cell:nth-child(2) { animation-delay: 0.02s; }
-.day-cell:nth-child(3) { animation-delay: 0.03s; }
-/* ... se puede generar con JS para más de 31 días */
-
-/* ========== UTILIDADES ========== */
-.text-center { text-align: center; }
-.mt-8 { margin-top: 8px; }
-.mt-12 { margin-top: 12px; }
-.mt-16 { margin-top: 16px; }
-.mb-12 { margin-bottom: 12px; }
-.gap-8 { gap: 8px; }
-.flex { display: flex; }
-.flex-center { display: flex; align-items: center; justify-content: center; }
-
-/* ========== ESTADO DE CARGA ========== */
-.loading {
-    opacity: 0.6;
-    pointer-events: none;
-}
-
-/* ========== BOTÓN COMPARTIR ========== */
-.share-btn {
-    background: var(--bg-input);
-    border: 1px solid var(--border-light);
-    color: var(--text-secondary);
-    padding: 8px 18px;
-    border-radius: var(--radius-sm);
-    cursor: pointer;
-    font-size: 13px;
-    font-family: inherit;
-    transition: var(--transition);
-    display: inline-flex;
-    align-items: center;
-    gap: 6px;
-}
-
-.share-btn:hover {
-    background: var(--bg-card-hover);
-    border-color: var(--border-color);
-    color: var(--text-primary);
-}
-
-/* ========== BOTÓN PDF ========== */
+/* ===== BOTÓN PDF ===== */
 .pdf-btn {
     background: var(--accent-gold-dim);
     border: 1px solid rgba(251, 191, 36, 0.2);
@@ -746,7 +594,27 @@ body {
     border-color: rgba(251, 191, 36, 0.3);
 }
 
-/* ========== TOAST NOTIFICACIONES ========== */
+/* ===== FOOTER ===== */
+.app-footer {
+    margin-top: 40px;
+    padding-top: 20px;
+    border-top: 1px solid var(--border-light);
+    text-align: center;
+    font-size: 13px;
+    color: var(--text-muted);
+}
+
+.app-footer a {
+    color: var(--text-secondary);
+    text-decoration: none;
+    transition: var(--transition);
+}
+
+.app-footer a:hover {
+    color: var(--accent-gold);
+}
+
+/* ===== TOAST ===== */
 .toast {
     position: fixed;
     bottom: 30px;
@@ -773,3 +641,61 @@ body {
 .toast .toast-icon {
     margin-right: 10px;
 }
+
+/* ===== RESPONSIVE ===== */
+@media (max-width: 768px) {
+    body { padding: 12px; }
+    .app-container { padding: 12px 8px 30px; }
+    .card { padding: 16px 14px; }
+    .header-title { font-size: 20px; }
+    .header-subtitle { font-size: 12px; }
+    
+    .navigation-controls {
+        flex-direction: column;
+        align-items: stretch;
+        gap: 12px;
+    }
+    .month-nav { justify-content: center; }
+    .plant-search { min-width: unset; width: 100%; }
+    .plant-search input { min-width: unset; }
+    
+    .calendar-grid { gap: 3px; }
+    .day-cell { min-height: 44px; font-size: 12px; }
+    .day-cell .day-number { font-size: 13px; }
+    .day-cell .phase-icon { font-size: 14px; }
+    .day-header { font-size: 10px; padding: 6px 0; }
+    
+    .legend {
+        gap: 6px 14px;
+        padding: 10px 14px;
+        font-size: 12px;
+    }
+    .recommendations-panel { padding: 16px; }
+    .action-tag { font-size: 12px; padding: 3px 12px; }
+}
+
+@media (max-width: 480px) {
+    .app-header {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 10px;
+    }
+    .header-right { align-self: flex-start; }
+    
+    .day-cell { min-height: 38px; }
+    .day-cell .day-number { font-size: 11px; }
+    .day-cell .phase-icon { font-size: 12px; }
+    .calendar-grid { gap: 2px; }
+    .month-display { font-size: 16px; min-width: 100px; }
+    .nav-btn { width: 38px; height: 38px; font-size: 14px; }
+    .legend-item { font-size: 11px; }
+}
+
+/* ===== ANIMACIONES ===== */
+@keyframes fadeInUp {
+    from { opacity: 0; transform: translateY(16px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+.card { animation: fadeInUp 0.5s ease forwards; }
+.day-cell { animation: fadeInUp 0.3s ease forwards; }
