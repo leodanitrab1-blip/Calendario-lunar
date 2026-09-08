@@ -1,6 +1,6 @@
 /**
  * ============================================================
- * 🚀 MAIN.JS - Controlador Principal
+ * 🚀 MAIN.JS - Controlador Principal (CORREGIDO)
  * ============================================================
  * 
  * Este archivo contiene:
@@ -11,10 +11,11 @@
  * 5. Exportar PDF
  * 6. Compartir
  * 7. Toast notifications
+ * 8. NAVEGACIÓN DE MESES (corregido)
  */
 
 // ============================================================
-// 1. DOM REFERENCIAS (adicionales a las de calendar.js)
+// 1. DOM REFERENCIAS
 // ============================================================
 
 const DOM_MAIN = {
@@ -30,7 +31,11 @@ const DOM_MAIN = {
     toastMessage: document.getElementById('toastMessage'),
     recommendationContent: document.getElementById('recommendationContent'),
     emptyState: document.getElementById('emptyState'),
-    plantSelectedDisplay: document.getElementById('plantSelectedDisplay')
+    plantSelectedDisplay: document.getElementById('plantSelectedDisplay'),
+    // Navegación
+    prevMonthBtn: document.getElementById('prevMonth'),
+    nextMonthBtn: document.getElementById('nextMonth'),
+    monthDisplay: document.getElementById('monthDisplay')
 };
 
 // ============================================================
@@ -77,6 +82,7 @@ document.addEventListener('DOMContentLoaded', function() {
     setupAutocomplete();
     
     console.log('✅ Aplicación iniciada correctamente');
+    console.log(`📅 Mostrando: ${calendarState.month}/${calendarState.year}`);
 });
 
 // ============================================================
@@ -84,21 +90,39 @@ document.addEventListener('DOMContentLoaded', function() {
 // ============================================================
 
 function setupEventListeners() {
-    // Navegación de meses (desde calendar.js)
+    // ============================================================
+    // NAVEGACIÓN DE MESES - CORREGIDO
+    // ============================================================
+    
+    // Botón mes anterior
     if (DOM_MAIN.prevMonthBtn) {
-        DOM_MAIN.prevMonthBtn.addEventListener('click', goToPreviousMonth);
-    }
-    if (DOM_MAIN.nextMonthBtn) {
-        DOM_MAIN.nextMonthBtn.addEventListener('click', goToNextMonth);
+        DOM_MAIN.prevMonthBtn.addEventListener('click', function(e) {
+            e.preventDefault();
+            console.log('⬅️ Mes anterior');
+            goToPreviousMonth();
+        });
     }
     
-    // Reset / Hoy
+    // Botón mes siguiente
+    if (DOM_MAIN.nextMonthBtn) {
+        DOM_MAIN.nextMonthBtn.addEventListener('click', function(e) {
+            e.preventDefault();
+            console.log('➡️ Mes siguiente');
+            goToNextMonth();
+        });
+    }
+    
+    // ============================================================
+    // RESET / HOY
+    // ============================================================
+    
     if (DOM_MAIN.resetBtn) {
         DOM_MAIN.resetBtn.addEventListener('click', function() {
             goToToday();
             showToast('📅 Volviendo al mes actual', '🌙');
         });
     }
+    
     if (DOM_MAIN.resetAllLink) {
         DOM_MAIN.resetAllLink.addEventListener('click', function(e) {
             e.preventDefault();
@@ -116,7 +140,10 @@ function setupEventListeners() {
         });
     }
     
-    // Buscador de plantas
+    // ============================================================
+    // BUSCADOR DE PLANTAS
+    // ============================================================
+    
     if (DOM_MAIN.plantSearch) {
         DOM_MAIN.plantSearch.addEventListener('input', function() {
             const query = this.value.trim();
@@ -132,20 +159,17 @@ function setupEventListeners() {
             if (e.key === 'Enter') {
                 const query = this.value.trim();
                 if (query.length > 0) {
-                    // Buscar y seleccionar la primera coincidencia
                     const results = searchPlants(query);
                     if (results.length > 0) {
                         selectPlant(results[0].id);
                         this.value = results[0].nombre;
                         DOM_MAIN.clearSearch.classList.add('visible');
-                        // Cerrar dropdown
                         closeAutocomplete();
                     }
                 }
             }
         });
         
-        // Cerrar autocompletado al hacer clic fuera
         document.addEventListener('click', function(e) {
             if (!e.target.closest('.plant-search')) {
                 closeAutocomplete();
@@ -159,7 +183,6 @@ function setupEventListeners() {
             DOM_MAIN.plantSearch.value = '';
             this.classList.remove('visible');
             closeAutocomplete();
-            // Limpiar selección de planta
             calendarState.selectedPlantId = null;
             calendarState.selectedDay = null;
             renderCalendar();
@@ -168,22 +191,36 @@ function setupEventListeners() {
         });
     }
     
-    // Tema claro/oscuro
+    // ============================================================
+    // TEMA CLARO/OSCURO
+    // ============================================================
+    
     if (DOM_MAIN.themeToggle) {
         DOM_MAIN.themeToggle.addEventListener('click', toggleTheme);
+        // Cargar tema guardado
+        loadTheme();
     }
     
-    // Compartir
+    // ============================================================
+    // COMPARTIR
+    // ============================================================
+    
     if (DOM_MAIN.shareBtn) {
         DOM_MAIN.shareBtn.addEventListener('click', sharePage);
     }
     
+    // ============================================================
     // PDF
+    // ============================================================
+    
     if (DOM_MAIN.pdfBtn) {
         DOM_MAIN.pdfBtn.addEventListener('click', exportPDF);
     }
     
-    // Feedback
+    // ============================================================
+    // FEEDBACK
+    // ============================================================
+    
     if (DOM_MAIN.feedbackLink) {
         DOM_MAIN.feedbackLink.addEventListener('click', function(e) {
             e.preventDefault();
@@ -192,10 +229,70 @@ function setupEventListeners() {
     }
     
     console.log('🔗 Event listeners configurados');
+});
+
+// ============================================================
+// 4. FUNCIONES DE NAVEGACIÓN (asegurar que funcionan)
+// ============================================================
+
+/**
+ * Ir al mes anterior - SOBRESCRIBE la función de calendar.js
+ */
+function goToPreviousMonth() {
+    console.log(`⬅️ Cambiando de ${calendarState.month}/${calendarState.year} a...`);
+    
+    calendarState.month--;
+    if (calendarState.month < 1) {
+        calendarState.month = 12;
+        calendarState.year--;
+    }
+    calendarState.selectedDay = null;
+    
+    console.log(`   ➡️ ${calendarState.month}/${calendarState.year}`);
+    
+    renderCalendar();
+    showEmptyState();
+    savePreferences();
+}
+
+/**
+ * Ir al mes siguiente - SOBRESCRIBE la función de calendar.js
+ */
+function goToNextMonth() {
+    console.log(`➡️ Cambiando de ${calendarState.month}/${calendarState.year} a...`);
+    
+    calendarState.month++;
+    if (calendarState.month > 12) {
+        calendarState.month = 1;
+        calendarState.year++;
+    }
+    calendarState.selectedDay = null;
+    
+    console.log(`   ➡️ ${calendarState.month}/${calendarState.year}`);
+    
+    renderCalendar();
+    showEmptyState();
+    savePreferences();
+}
+
+/**
+ * Ir al mes actual - SOBRESCRIBE la función de calendar.js
+ */
+function goToToday() {
+    const today = new Date();
+    calendarState.year = today.getFullYear();
+    calendarState.month = today.getMonth() + 1;
+    calendarState.selectedDay = null;
+    
+    console.log(`📅 Volviendo a hoy: ${calendarState.month}/${calendarState.year}`);
+    
+    renderCalendar();
+    showEmptyState();
+    savePreferences();
 }
 
 // ============================================================
-// 4. BUSCADOR CON AUTOCOMPLETADO
+// 5. BUSCADOR CON AUTOCOMPLETADO
 // ============================================================
 
 let autocompleteContainer = null;
@@ -243,7 +340,6 @@ function handleSearchInput(query) {
         return;
     }
     
-    // Limitar a 10 resultados
     const limited = results.slice(0, 10);
     
     let html = '';
@@ -271,7 +367,6 @@ function handleSearchInput(query) {
     autocompleteContainer.innerHTML = html;
     autocompleteContainer.style.display = 'block';
     
-    // Event listeners para items
     autocompleteContainer.querySelectorAll('.autocomplete-item').forEach(item => {
         item.addEventListener('click', function() {
             const plantId = this.dataset.id;
@@ -284,7 +379,6 @@ function handleSearchInput(query) {
             closeAutocomplete();
         });
         
-        // Hover
         item.addEventListener('mouseenter', function() {
             this.style.background = 'var(--bg-card-hover)';
         });
@@ -301,7 +395,7 @@ function closeAutocomplete() {
 }
 
 // ============================================================
-// 5. SELECCIONAR PLANTA
+// 6. SELECCIONAR PLANTA
 // ============================================================
 
 function selectPlant(plantId) {
@@ -314,23 +408,16 @@ function selectPlant(plantId) {
     calendarState.selectedPlantId = plantId;
     calendarState.selectedDay = null;
     
-    // Actualizar display
     updatePlantDisplay();
-    
-    // Re-renderizar calendario con las recomendaciones
     renderCalendar();
-    
-    // Mostrar información de la planta en el panel
     showPlantInfo(plantId);
     
     showToast(`✅ ${plant.icono || '🌱'} ${plant.nombre} seleccionada`, '🌿');
-    
-    // Guardar preferencia
     savePreferences();
 }
 
 // ============================================================
-// 6. TEMA CLARO/OSCURO
+// 7. TEMA CLARO/OSCURO
 // ============================================================
 
 function toggleTheme() {
@@ -341,9 +428,7 @@ function toggleTheme() {
     html.setAttribute('data-theme', newTheme);
     DOM_MAIN.themeToggle.textContent = newTheme === 'dark' ? '☀️' : '🌙';
     
-    // Guardar preferencia
     localStorage.setItem('lunar-theme', newTheme);
-    
     showToast(`🌓 Cambiando a modo ${newTheme === 'dark' ? 'oscuro' : 'claro'}`, '🎨');
 }
 
@@ -356,7 +441,7 @@ function loadTheme() {
 }
 
 // ============================================================
-// 7. COMPARTIR
+// 8. COMPARTIR
 // ============================================================
 
 function sharePage() {
@@ -369,32 +454,26 @@ function sharePage() {
             title: title,
             text: text,
             url: url
-        }).catch(() => {
-            // Si el usuario cancela, no hacer nada
-        });
+        }).catch(() => {});
     } else {
-        // Fallback: copiar al portapapeles
         const shareText = `${title}\n${text}\n${url}`;
         navigator.clipboard.writeText(shareText).then(() => {
             showToast('📋 Enlace copiado al portapapeles', '✅');
         }).catch(() => {
-            // Si falla, abrir ventana de compartir
             window.open(`https://twitter.com/intent/tweet?text=${encodeURIComponent(text)}&url=${encodeURIComponent(url)}`, '_blank');
         });
     }
 }
 
 // ============================================================
-// 8. EXPORTAR PDF
+// 9. EXPORTAR PDF
 // ============================================================
 
 function exportPDF() {
     const { year, month, selectedPlantId } = calendarState;
     
-    // Obtener HTML para imprimir
     const htmlContent = generatePrintableCalendar(year, month, selectedPlantId);
     
-    // Abrir ventana para imprimir
     const printWindow = window.open('', '_blank', 'width=900,height=700');
     if (!printWindow) {
         showToast('❌ Permite ventanas emergentes para exportar PDF', '⚠️');
@@ -404,7 +483,6 @@ function exportPDF() {
     printWindow.document.write(htmlContent);
     printWindow.document.close();
     
-    // Esperar a que cargue y luego imprimir
     printWindow.onload = function() {
         printWindow.print();
     };
@@ -413,7 +491,7 @@ function exportPDF() {
 }
 
 // ============================================================
-// 9. TOAST NOTIFICATIONS
+// 10. TOAST NOTIFICATIONS
 // ============================================================
 
 let toastTimeout = null;
@@ -436,7 +514,7 @@ function showToast(message, icon = '✨') {
 }
 
 // ============================================================
-// 10. PREFERENCIAS (localStorage)
+// 11. PREFERENCIAS (localStorage)
 // ============================================================
 
 function savePreferences() {
@@ -448,9 +526,7 @@ function savePreferences() {
             lastMonth: calendarState.month
         };
         localStorage.setItem('lunar-preferences', JSON.stringify(prefs));
-    } catch (e) {
-        // Ignorar errores de localStorage
-    }
+    } catch (e) {}
 }
 
 function loadPreferences() {
@@ -459,13 +535,11 @@ function loadPreferences() {
         if (saved) {
             const prefs = JSON.parse(saved);
             
-            // Cargar tema
             if (prefs.theme) {
                 document.documentElement.setAttribute('data-theme', prefs.theme);
                 DOM_MAIN.themeToggle.textContent = prefs.theme === 'dark' ? '☀️' : '🌙';
             }
             
-            // Cargar última planta
             if (prefs.lastPlant) {
                 const plant = getPlantById(prefs.lastPlant);
                 if (plant) {
@@ -475,42 +549,29 @@ function loadPreferences() {
                 }
             }
             
-            // Cargar último mes/año
             if (prefs.lastYear && prefs.lastMonth) {
                 calendarState.year = prefs.lastYear;
                 calendarState.month = prefs.lastMonth;
             }
         }
-    } catch (e) {
-        // Ignorar errores de localStorage
-    }
+    } catch (e) {}
 }
 
 // ============================================================
-// 11. UTILIDADES ADICIONALES
+// 12. SOBRESCRIBIR FUNCIONES DE CALENDAR
 // ============================================================
 
-/**
- * Sobrescribir funciones de calendar.js para integración
- * con el buscador y el estado global
- */
-
-// Guardar referencia a la función original de renderCalendar
+// Asegurar que renderCalendar guarde preferencias
 const originalRenderCalendar = renderCalendar;
-
-// Sobrescribir renderCalendar para que guarde preferencias
 renderCalendar = function() {
     originalRenderCalendar();
     savePreferences();
 };
 
-// Guardar referencia a showPlantInfo original
+// Asegurar que showPlantInfo muestre correctamente
 const originalShowPlantInfo = showPlantInfo;
-
-// Sobrescribir showPlantInfo para que también limpie el estado vacío
 showPlantInfo = function(plantId) {
     originalShowPlantInfo(plantId);
-    // Asegurar que el panel de recomendaciones se muestre
     if (DOM_MAIN.emptyState) {
         DOM_MAIN.emptyState.style.display = 'none';
     }
@@ -520,7 +581,7 @@ showPlantInfo = function(plantId) {
 };
 
 // ============================================================
-// 12. EXPORTACIÓN (si se usa como módulo)
+// 13. EXPORTACIÓN
 // ============================================================
 
 if (typeof module !== 'undefined' && module.exports) {
@@ -533,8 +594,12 @@ if (typeof module !== 'undefined' && module.exports) {
         savePreferences,
         loadPreferences,
         handleSearchInput,
-        closeAutocomplete
+        closeAutocomplete,
+        goToPreviousMonth,
+        goToNextMonth,
+        goToToday
     };
 }
 
 console.log('🚀 Controlador principal cargado correctamente');
+console.log('📅 Navegación de meses: ✅ Activada');
